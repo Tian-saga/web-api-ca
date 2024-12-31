@@ -9,10 +9,13 @@ import { BrowserRouter, Route, Navigate, Routes } from "react-router-dom";
 import { QueryClientProvider, QueryClient } from "react-query";
 import { ReactQueryDevtools } from 'react-query/devtools';
 import MoviesContextProvider from "./contexts/moviesContext";
-import AddMovieReviewPage from './pages/addMovieReviewPage'
+import AddMovieReviewPage from './pages/addMovieReviewPage';
 import UpcomingMoviesPage from './pages/UpcomingMovies';
 import TrendingMoviesPage from "./pages/TrendingMoviesPage";
 import ActorDetailsPage from "./pages/actorDetailsPage";
+import LoginPage from "./pages/LoginPage"; // 引入 LoginPage
+import ProtectedRoute from "./components/ProtectedRoute"; // 引入 ProtectedRoute
+import './axiosConfig';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,8 +34,28 @@ const App = () => {
         <SiteHeader />
         <MoviesContextProvider>
           <Routes>
-            <Route path="/reviews/form" element={ <AddMovieReviewPage /> } />
-            <Route path="/movies/favorites" element={<FavoriteMoviesPage />} />
+            {/* 登录页面 */}
+            <Route path="/login" element={<LoginPage />} />
+
+            {/* 使用 ProtectedRoute 保护的路由 */}
+            <Route 
+              path="/movies/favorites" 
+              element={
+                <ProtectedRoute>
+                  <FavoriteMoviesPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/reviews/form" 
+              element={
+                <ProtectedRoute>
+                  <AddMovieReviewPage />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* 其他公开路由 */}
             <Route path="/reviews/:id" element={ <MovieReviewPage /> } />
             <Route path="/movies/:id" element={<MoviePage />} />
             <Route path="/" element={<HomePage />} />

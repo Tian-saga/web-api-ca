@@ -1,51 +1,69 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import PageTemplate from "../components/templateMovieListPage";
-import { MoviesContext } from "../contexts/moviesContext";
-import { useQueries } from "react-query";
-import { getMovie } from "../api/tmdb-api";
-import Spinner from '../components/spinner';
+import Spinner from "../components/spinner";
 import RemoveFromFavorites from "../components/cardIcons/removeFromFavorites";
 import WriteReview from "../components/cardIcons/writeReview";
+import { MoviesContext } from "../contexts/moviesContext";
+import { getFavourites } from "../api/favourites";
+import { getMovie } from "../api/tmdb-api";
+import { jwtDecode } from "jwt-decode";
+
+import { useNavigate } from "react-router-dom";
 
 const FavoriteMoviesPage = () => {
-  const { favorites: movieIds } = useContext(MoviesContext);
+  const { favorites, setFavorites } = useContext(MoviesContext); // 引入 context
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate(); // 用于跳转页面
 
-  // Create an array of queries and run in parallel.
-  const favoriteMovieQueries = useQueries(
-    movieIds.map((movieId) => {
-      return {
-        queryKey: ["movie", { id: movieId }],
-        queryFn: getMovie,
-      };
-    })
-  );
+  // 从 localStorage 获取 token 并解码用户 ID
+  const token = localStorage.getItem("token");
+  const userId = token ? jwtDecode(token)._id : null;
 
-  // Check if any of the parallel queries is still loading.
-  const isLoading = favoriteMovieQueries.find((m) => m.isLoading === true);
+  // 检查用户是否已登录
+  useEffect(() => {
+    if (!token || !userId) {
+      console.warn("User not logged in. Redirecting to login page...");
+      navigate("/login"); // 跳转到登录页
+    }
+  }, [token, userId, navigate]);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        if (!userId) return; // 如果用户未登录，直接返回
+        const response = await getFavourites(userId); // 从后端获取收藏夹数据
+        setFavorites(response.favourites.map((fav) => fav.movieId)); // 更新 context
+        const movieData = await Promise.all(
+          response.favourites.map(async (fav) => {
+            return await getMovie({ queryKey: ["movie", { id: fav.movieId }] });
+          })
+        );
+        setMovies(movieData); // 保存到状态中
+      } catch (error) {
+        console.error("Failed to load favorites:", error.message);
+      } finally {
+        setIsLoading(false); // 关闭加载状态
+      }
+    };
+
+    fetchFavorites();
+  }, [userId, setFavorites]);
 
   if (isLoading) {
     return <Spinner />;
   }
 
-  const movies = favoriteMovieQueries.map((q) => {
-    q.data.genre_ids = q.data.genres.map(g => g.id);
-    return q.data;
-  });
-
-  //const toDo = () => true;
-
   return (
     <PageTemplate
       title="Favorite Movies"
       movies={movies}
-      action={(movie) => {
-        return (
-          <>
-            <RemoveFromFavorites movie={movie} />
-            <WriteReview movie={movie} />
-          </>
-        );
-      }}
+      action={(movie) => (
+        <>
+          <RemoveFromFavorites movie={movie} />
+          <WriteReview movie={movie} />
+        </>
+      )}
     />
   );
 };

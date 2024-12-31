@@ -6,14 +6,19 @@ import { MoviesContext } from "../../contexts/moviesContext";
 const RemoveFromFavoritesIcon = ({ movie }) => {
   const context = useContext(MoviesContext);
 
-  const handleRemoveFromFavorites = (e) => {
-    e.preventDefault();
-    context.removeFromFavorites(movie);
+  const handleRemoveFromFavorites = async (e) => {
+    e.preventDefault(); // 防止事件冒泡
+    try {
+      await context.removeFromFavorites(movie); // 调用上下文中的删除方法
+    } catch (error) {
+      console.error("Failed to remove movie from favorites:", error.message);
+    }
   };
+
   return (
     <IconButton
       aria-label="remove from favorites"
-      onClick={handleRemoveFromFavorites}
+      onClick={handleRemoveFromFavorites} // 点击事件绑定
     >
       <DeleteIcon color="primary" fontSize="large" />
     </IconButton>
