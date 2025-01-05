@@ -1,19 +1,33 @@
 # Assignment 2 - Web API.
 
-Name: Your Name
+Name: Zitian Zhong
 
 ## Features.
 
 A bullet-point list of the ADDITIONAL features you have implemented in the API **THAT WERE NOT IN THE LABS** (or modifications to existing features)
  
- + Feature 1 
- + Feature 2 
- + Feature 3 
- + etc
+User Authentication: Implemented JWT-based authentication for user login and protected routes.
+Favorites Management:
+Added functionality to store and manage user-specific favorite movies.
+Enabled users to add or remove movies from their favorites list.
+Token Validation: Middleware to ensure protected routes can only be accessed by authorized users.
+Integration with React Frontend: Updated frontend to interact with backend API for user login, authentication, and favorites management.
 
 ## Setup requirements.
 
-[ Outline any non-standard setup steps necessary to run your app locally after cloning the repo.]
+MongoDB: Ensure you have access to a MongoDB instance and note the connection URI.
+Node.js: Install Node.js (version 16 or higher recommended).
+Environment Variables: Create an .env file in the movies-api directory with the following content:
+plaintext
+NODEENV=development
+PORT=8080
+HOST=
+mongoDB=YourMongoURL
+seedDb=true
+secret=YourJWTSecret
+Frontend Configuration: In the react-movies directory, create a .env file:
+plaintext
+REACT_APP_TMDB_KEY=YourTMDBApiKey
 
 ## API Configuration
 
@@ -31,23 +45,48 @@ secret=YourJWTSecret
 ______________________
 
 ## API Design
-Give an overview of your web API design, perhaps similar to the following: 
+The API includes the following endpoints:
 
-- /api/movies | GET | Gets a list of movies 
-- /api/movies/{movieid} | GET | Gets a single movie 
-- /api/movies/{movieid}/reviews | GET | Get all reviews for movie 
-- /api/movies/{movieid}/reviews | POST | Create a new review for Movie 
-
-If you have your API design on an online platform or graphic, please link to it (e.g. [Swaggerhub](https://app.swaggerhub.com/)).
+Movies
+GET /api/movies
+Returns a list of movies.
+GET /api/movies/{movieid}
+Returns details of a specific movie.
+GET /api/movies/{movieid}/reviews
+Retrieves all reviews for a specific movie.
+POST /api/movies/{movieid}/reviews
+Adds a new review to a specific movie.
+Users
+POST /api/users
+?action=register to register a new user.
+Without ?action, the endpoint logs in an existing user and returns a JWT.
+GET /api/users/{id}/favourites
+Retrieves the favorite movies of a specific user. (Protected)
+POST /api/users/{id}/favourites
+Adds a movie to the user's favorite list. (Protected)
+DELETE /api/users/{id}/favourites/{movieid}
+Removes a movie from the user's favorite list. (Protected)
 
 ## Security and Authentication
 
-Give details of authentication/security implemented on the API (e.g. passport/sessions). Indicate which routes are protected.
+Authentication: Implemented using JWT (JSON Web Tokens). Users must log in to obtain a token, which is required for accessing protected routes.
+Protected Routes:
+Adding/removing favorites.
+Viewing a user's favorite movies.
 
 ## Integrating with React App
 
-Describe how you integrated your React app with the API. List the views that use your Web API instead of the TMDB API. Describe any other updates to the React app from Assignment One.
+User Authentication: Integrated React frontend with the backend for user login and token-based authentication.
+Token is stored in localStorage and attached to all protected API requests.
+Favorites Management:
+The "Favorites" page now displays user-specific favorite movies retrieved from the backend.
+Users can add or remove movies from their favorites list, and the changes are synced with the backend.
+Protected Views:
+Certain views, such as "Favorites," require the user to log in before accessing them.
+Implemented a ProtectedRoute component to handle this functionality.
 
 ## Independent learning (if relevant)
 
-Briefly explain any non-standard features developed for the app.   
+Token-Based Authentication: Researched and implemented middleware for verifying JWTs to protect sensitive routes.
+React Context API: Used context to manage authentication and favorites state across the React app.
+Backend-Frontend Integration: Worked on synchronizing the React frontend with the backend for seamless user experience. 
